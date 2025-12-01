@@ -32,11 +32,17 @@ const timeout = require('./modules/timeout');
 const dmMail = require('./modules/dm-mail');
 const bigBrother = tryRequire('./modules/big-brother');
 
+const activityMessages = [
+    'for thoughtcrime comitters',
+    'for uncubester behaviour',
+    'for evilness'
+];
+
 client.once(Events.ClientReady, (client) => {
     console.log(`Logged in as ${client.user.tag}`);
     client.user.setActivity({
         type: ActivityType.Watching,
-        name: 'for thoughtcrime committers'
+        name: activityMessages[Math.floor(Math.random() * activityMessages.length)]
     });
 });
 
