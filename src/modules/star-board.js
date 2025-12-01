@@ -24,6 +24,7 @@ const _setStarboardMessageId = db.prepare('UPDATE starboard SET starboard_messag
 const _setCount = db.prepare('UPDATE starboard SET count = ? WHERE original_message_id = ?');
 
 const EMOJI = '⚡';
+const SUPPORTED_EMOJIS = ['⚡', '🔥'];
 const THRESHOLD = 5;
 const COLORS = [
     0xfe5726,
@@ -154,7 +155,7 @@ const updateMessage = async (message) => {
 
 const onReaction = async (reaction) => {
     await reaction.fetch();
-    if (reaction.emoji.name !== EMOJI) {
+    if (!SUPPORTED_EMOJIS.includes(reaction.emoji.name)) {
         return;
     }
 
