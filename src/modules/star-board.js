@@ -23,7 +23,7 @@ const _getMessage = db.prepare('SELECT starboard_message_id, count FROM starboar
 const _setStarboardMessageId = db.prepare('UPDATE starboard SET starboard_message_id = ? WHERE original_message_id = ?;');
 const _setCount = db.prepare('UPDATE starboard SET count = ? WHERE original_message_id = ?');
 
-const EMOJI = '🔥';
+const EMOJI = '⚡';
 const THRESHOLD = 5;
 const COLORS = [
     0xfe5726,
