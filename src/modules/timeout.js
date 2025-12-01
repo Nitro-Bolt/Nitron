@@ -39,7 +39,7 @@ const timeout = async (interaction) => {
   try {
     await user.send({
       content: [
-        `⏲️ You have been timed out in the Turbowarp server for the following reason: ${reason}`,
+        `⏲️ You have been timed out in the NitroBolt server for the following reason: ${reason}`,
         ``,
         `If you disagree or have any questions, you can either:`,
         `1. Wait for the timeout to expire then open a ticket, or`,
