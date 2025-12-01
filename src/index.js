@@ -33,7 +33,7 @@ const dmMail = require('./modules/dm-mail');
 const bigBrother = tryRequire('./modules/big-brother');
 
 const activityMessages = [
-    'for thoughtcrime comitters',
+    'for thoughtcrime committers',
     'for uncubester behaviour',
     'for evilness'
 ];
