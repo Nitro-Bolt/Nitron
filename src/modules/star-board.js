@@ -23,12 +23,12 @@ const _getMessage = db.prepare('SELECT starboard_message_id, count FROM starboar
 const _setStarboardMessageId = db.prepare('UPDATE starboard SET starboard_message_id = ? WHERE original_message_id = ?;');
 const _setCount = db.prepare('UPDATE starboard SET count = ? WHERE original_message_id = ?');
 
-const EMOJI = '🍡';
-const THRESHOLD = 7;
+const EMOJI = '🔥';
+const THRESHOLD = 5;
 const COLORS = [
-    0xfcb1e3,
-    0xfed983,
-    0xa6d387
+    0xfe5726,
+    0xffa126,
+    0xff2626
 ];
 
 const isPublicChannel = (channel) => {
@@ -38,8 +38,8 @@ const isPublicChannel = (channel) => {
 
     const DISABLED_CHANNELS = [
         config.starboardChannelId,
-        '1100160429382193193', // #updates
-        '901247658096754709', // #readme
+        '1202712912783999067', // #updates
+        '1202712865887494234', // #readme
 
         // mod channels; they should already be excluded by below checks but just to be safe...
         '1046570476417323049',
