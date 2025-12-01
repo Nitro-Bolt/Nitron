@@ -66,7 +66,7 @@ const handleSendDirectMessage = async (interaction) => {
   let sentMessage = false;
   try {
     await user.send({
-      content: `Message from TurboWarp moderation: ${content}`
+      content: `Message from NitroBolt moderation: ${content}`
     });
     sentMessage = true;
   } catch (error) {
