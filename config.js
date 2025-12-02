@@ -15,11 +15,11 @@ module.exports = {
 
     // Create a channel for mod stuff, then
     // copy and paste its ID here as a string.
-    modChannelId: 'right click on the channel > copy id',
+    modChannelId: '1336747005027811398',
 
     // Create a channel for logging, then
     // copy and paste its ID here as a string.
-    logChannelId: 'right click on the channel > copy id',
+    logChannelId: '1445243462382518456',
 
     // Create a channel for the mod contact system, then
     // copy and paste its ID here as a string.
@@ -27,7 +27,7 @@ module.exports = {
 
     // Create a channel for the starboard, then
     // copy and paste its ID here as a string.
-    starboardChannelId: 'right click on the channel > copy id',
+    starboardChannelId: '1445243068545761403',
 
     // Create a webhook to post extremely important events, then put the URL here
     majorOffensesSignalingService: 'https://discord.com/api/webhooks/...',
