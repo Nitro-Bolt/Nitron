@@ -8,7 +8,7 @@ if (!fs.existsSync(resolvedDataDirectory)) {
     throw new Error(`Data path "${resolvedDataDirectory}" does not exist. Did you forget to mount it?`);
 }
 
-const db = new sqlite3(pathUtil.join(resolvedDataDirectory, 'turbo-robot.db'));
+const db = new sqlite3(pathUtil.join(resolvedDataDirectory, 'nitron.db'));
 db.pragma('journal_mode = WAL');
 db.pragma('secure_delete = true');
 

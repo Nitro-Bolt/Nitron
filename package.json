@@ -1,7 +1,7 @@
 {
-    "name": "@turbowarp/turbo-robot",
+    "name": "@nitrobolt/nitron",
     "version": "1.0.0",
-    "description": "The open source parts of the TurboWarp Discord server's bot.",
+    "description": "The NitroBolt Discord server's bot.",
     "main": "src/index.js",
     "license": "Apache-2.0",
     "dependencies": {
