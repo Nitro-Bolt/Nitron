@@ -1,5 +1,5 @@
 {
-    "name": "@nitrobolt/nitron",
+    "name": "@nitro-bolt/nitron",
     "version": "1.0.0",
     "description": "The NitroBolt Discord server's bot.",
     "main": "src/index.js",
