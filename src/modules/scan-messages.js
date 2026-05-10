@@ -31,7 +31,7 @@ function hammingDistance(hash1, hash2) {
 async function checkMessage(message) {
     // hashed images
     if (message.attachments.size > 0) {
-        Array.from(message.attachments.values()).forEach(attachment => {
+        for (const attachment in message.attachments.values()) {
             try {
                 const res = await fetch(attachment.url);
                 const buffer = await res.arrayBuffer();
@@ -44,7 +44,7 @@ async function checkMessage(message) {
             } catch (err) {
                 console.warn("Failed to hash image")
             }
-        });
+        };
     }
 
     // links
