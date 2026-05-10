@@ -3,11 +3,9 @@ const {
     ActivityType,
     AuditLogEvent
 } = require('discord.js');
-const {
-    token
-} = require('../config');
-const cloneDeep = require("lodash.clonedeep");
 
+const { token } = require('../config');
+const cloneDeep = require("lodash.clonedeep");
 const client = require('./client');
 
 const tryRequire = (path) => {
@@ -30,7 +28,10 @@ const logging = require('./modules/logging');
 const slowmode = require('./modules/slowmode');
 const timeout = require('./modules/timeout');
 const dmMail = require('./modules/dm-mail');
+const unblock = require('./modules/unblock');
+const hashes = require('./modules/hashes');
 const bigBrother = tryRequire('./modules/big-brother');
+const scan = require('./modules/scan-messages');
 
 const activityMessages = [
     'for thoughtcrime committers',
@@ -64,6 +65,7 @@ client.on(Events.MessageCreate, async (message) => {
         }
 
         if (bigBrother) await bigBrother.checkThoughtcrime(message);
+        scan.checkMessage(message);
 
         await dmMail.handleDirectMessage(message);
     } catch (e) {
@@ -125,6 +127,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 break;
             case 'mutedm':
                 await dmMail.handleMuteDirectMessage(interaction);
+                break;
+            case 'unblock':
+                await unblock.unblock(interaction);
+                break;
+            case 'hashes':
+                await hashes.hash(interaction);
                 break;
             case 'Report User':
                 await contactMods.reportUser(interaction);

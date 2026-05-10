@@ -154,6 +154,37 @@ const commands = [
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setContexts(InteractionContextType.Guild),
     */
+    new SlashCommandBuilder()
+        .setName('unblock')
+        .setDescription('Remove a user from the bot block list immediately')
+        .addUserOption(option => option
+            .setName('user')
+            .setDescription('The user to unblock')
+            .setRequired(true)
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .setContexts(InteractionContextType.Guild),
+    new SlashCommandBuilder()
+        .setName('hashes')
+        .setDescription('Modify hashed scam images')
+        .addAttachmentOption(option =>
+            option
+                .setName("image")
+                .setDescription("The image to hash; be cautious!")
+                .setRequired(true)
+        )
+        .addStringOption(option =>
+            option
+                .setName("action")
+                .setDescription("The action taken; delete this from hashes or add it to hashes")
+                .addChoices(
+                    {name:"Delete from hashes",value:"del"},
+                    {name:"Add to hashes",value:"add"}
+                )
+                .setRequired(true)
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .setContexts(InteractionContextType.Guild),
     new ContextMenuCommandBuilder()
         .setName('Report User')
         .setType(ApplicationCommandType.User)
