@@ -2,7 +2,7 @@ const db = require('../db-bots');
 const imghash = require('imghash');
 
 // if an invite link contains these, it's deleted and the user is kicked
-const terms = ["NSFW", "+18", "18+", "🔞"]
+const terms = ["nsfw", "+18", "18+", "🔞", "cam"]
 
 async function kickMember(message) {
     db.prepare(`
@@ -56,14 +56,14 @@ async function checkMessage(message) {
 
     // invites
     if (message.content.includes("discord.gg/")) {
-        console.log("detected invite")
         const code = message.content.split("discord.gg/")[1].split(" ")[0]; // get before space incase there's anything before or after the invite code
         const build = `https://discord.com/api/v10/invites/${code}`;
         const res = await fetch(build);
         const data = await res.json();
-        console.log(build, data)
+        const profile = data.profile.name.toLowerCase();
+        const channel = data.channel.name.toLowerCase();
         for (const term of terms) {
-            if (data.profile.name.toUpperCase().includes(term) || data.channel.name.toUpperCase().includes(term)) {
+            if (profile.includes(term) || channel.includes(term)) {
                 kickMember(message); break;
             }
         };

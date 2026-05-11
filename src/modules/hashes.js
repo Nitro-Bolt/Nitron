@@ -1,6 +1,7 @@
 const { MessageFlags, PermissionsBitField } = require('discord.js');
 const db = require('../db-bots');
 const imghash = require('imghash');
+const { modChannelId } = require('../../config.js');
 
 // copied lazily from scan-messages.js
 function hammingDistance(hash1, hash2) {
@@ -16,6 +17,14 @@ function hammingDistance(hash1, hash2) {
 }
 
 const hash = async (interaction) => {
+    if (interaction.channel.id !== modChannelId) {
+        interaction.reply({
+            content: `/hashes must be used in <#${modChannelId}> to ensure that other moderators are aware`,
+            flags: MessageFlags.Ephemeral
+        });
+        return;
+    }
+
     const action = interaction.options.getString("action");
     const image = interaction.options.getAttachment('image');
     const res = await fetch(image.url);
