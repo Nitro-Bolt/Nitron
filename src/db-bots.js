@@ -22,12 +22,6 @@ db.prepare(`
         hash TEXT PRIMARY KEY
     )    
 `).run();
-db.prepare(`
-    CREATE TABLE IF NOT EXISTS scam_links (
-        link TEXT PRIMARY KEY
-    )    
-`).run();
-
 
 module.exports = db;
 

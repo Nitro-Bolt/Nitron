@@ -2,7 +2,10 @@ const db = require('../db-bots');
 const imghash = require('imghash');
 
 // if an invite link contains these, it's deleted and the user is kicked
-const terms = ["nsfw", "+18", "18+", "🔞", "cam"]
+const terms = ["nsfw", "\\+18", "18\\+", "🔞", "cam", "leak", "nude"]
+
+// WORD is replaced here with the term in terms, btw
+const pattern = /(\b|\W|^)WORDs?(\b|\W|$)/
 
 async function kickMember(message) {
     db.prepare(`
@@ -13,7 +16,7 @@ async function kickMember(message) {
     try {
         await message.member.send("You have been automatically kicked for suspicion of being a bot. Please rejoin later.");
         await message.member.kick("Automatic bot kick.");
-    } catch (err) { console.error(`Could not kick suspected bot: ${err}`) };
+    } catch (err) { console.warn(`Could not kick suspected bot: ${err}`) };
 }
 
 function hammingDistance(hash1, hash2) {
@@ -42,16 +45,9 @@ async function checkMessage(message) {
                     }
                 }
             } catch (err) {
-                console.warn("Failed to hash image")
+                console.warn("Failed to check image");
             }
         };
-    }
-
-    // links
-    for (const row of db.prepare(`SELECT link FROM scam_links`).all()) {
-        if (message.content.contains(row)) {
-            kickMember(message); break;
-        }
     }
 
     // invites
@@ -63,7 +59,7 @@ async function checkMessage(message) {
         const profile = data.profile.name.toLowerCase();
         const channel = data.channel.name.toLowerCase();
         for (const term of terms) {
-            if (profile.includes(term) || channel.includes(term)) {
+            if (profile.match(pattern.replace('WORD', term)) || channel.match(pattern.replace('WORD', term))) {
                 kickMember(message); break;
             }
         };
