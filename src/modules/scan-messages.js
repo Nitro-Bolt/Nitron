@@ -2,7 +2,7 @@ const db = require('../db-bots');
 const imghash = require('imghash');
 
 // if an invite link contains these, it's deleted and the user is kicked
-const terms = ["nsfw", "\\+18", "18\\+", "🔞", "cam", "leak", "nude"]
+const terms = ["nsfw", "\\+18", "18\\+", "🔞", "cam", "leak", "nude"];
 
 // WORD is replaced here with the term in terms, btw
 const pattern = /(\b|\W|^)WORDs?(\b|\W|$)/
@@ -34,7 +34,7 @@ function hammingDistance(hash1, hash2) {
 async function checkMessage(message) {
     // hashed images
     if (message.attachments.size > 0) {
-        for (const attachment in message.attachments.values()) {
+        for (const [ id, attachment ] of message.attachments) {
             try {
                 const res = await fetch(attachment.url);
                 const buffer = await res.arrayBuffer();
