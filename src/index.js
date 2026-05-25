@@ -7,6 +7,7 @@ const {
 const { token } = require('../config');
 const cloneDeep = require("lodash.clonedeep");
 const client = require('./client');
+const dbBots = require('./db-bots');
 const fs = require('fs');
 
 const tryRequire = (path) => {
@@ -49,6 +50,11 @@ let invites;
 
 client.on(Events.ClientReady, async (client) => {
     setInterval(mods.contactMods.ticketActivity, 1 * 60 * 1000);
+    setInterval(() => {
+        dbBots.prepare(`
+            DELETE FROM tracked_ids WHERE created < ?
+        `).run(Date.now());
+    }, 60 * 60 * 1000);
     invites = await client.guilds.cache.first().invites.fetch();
 });
 
@@ -62,7 +68,7 @@ client.on(Events.MessageCreate, async (message) => {
             return;
         }
 
-        if (bigBrother) await bigBrother.checkThoughtcrime(message);
+        if (mods.bigBrother) await mods.bigBrother.checkThoughtcrime(message);
         mods.scanMessages.checkMessage(message);
 
         await mods.dmMail.handleDirectMessage(message);
