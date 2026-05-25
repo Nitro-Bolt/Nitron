@@ -240,14 +240,10 @@ const auditLogs = async (auditLog) => {
       }
       break;
     case AuditLogEvent.InviteCreate:
+      const unix = Math.floor(Date.now()/1000)+auditLog.target.maxAge;
       unimportantLog = `🔗 <@${auditLog.executorId}> created a${auditLog.target.temporary ? ' temporary' : 'n'} invite \`${auditLog.target.code}\` with ${
         auditLog.target.maxUses === 0 ? 'no limit' : `${auditLog.target.maxUses} max use(s)`} and ${
-        auditLog.target.maxAge === 0 ? 'no expiration' : `expires in ${
-          auditLog.target.maxAge < 86400 ? `${
-            auditLog.target.maxAge < 3600 ? `${
-              auditLog.target.maxAge / 60} minute(s)` : `${
-            auditLog.target.maxAge / 3600} hour(s)`}` : `${
-          auditLog.target.maxAge / 86400} day(s)`}`
+        auditLog.target.maxAge === 0 ? 'no expiration' : `expires <t:${unix}:R> or on <t:${unix}:F>`
         }`;
       break;
     case AuditLogEvent.InviteDelete:
