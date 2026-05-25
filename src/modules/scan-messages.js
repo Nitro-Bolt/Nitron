@@ -66,4 +66,4 @@ async function checkMessage(message) {
     }
 }
 
-module.exports = { checkMessage };
+module.exports = { checkMessage, hammingDistance };

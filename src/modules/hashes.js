@@ -2,19 +2,7 @@ const { MessageFlags, PermissionsBitField } = require('discord.js');
 const db = require('../db-bots');
 const imghash = require('imghash');
 const { modChannelId } = require('../../config.js');
-
-// copied lazily from scan-messages.js
-function hammingDistance(hash1, hash2) {
-    const big1 = BigInt('0x' + hash1);
-    const big2 = BigInt('0x' + hash2);
-    let biggest = big1 ^ big2;
-    let dist = 0;
-    while (biggest) {
-        dist += Number(biggest & 1n);
-        biggest >>= 1n;
-    }
-    return dist;
-}
+const { hammingDistance } = require('./scan-messages.js');
 
 const hash = async (interaction) => {
     if (interaction.channel.id !== modChannelId) {
