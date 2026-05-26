@@ -117,19 +117,14 @@ const commands = [
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
         .setContexts(InteractionContextType.Guild),
-    /*
     new SlashCommandBuilder()
         .setName('slowmode')
         .setDescription('Set slowmode in the current channel')
-        .addBooleanOption(option => option
-            .setName('state')
-            .setDescription('Whether or not slowmode is enabled')
-            .setRequired(true)
-        )
         .addStringOption(option => option
             .setName('time')
-            .setDescription('Amount of time slowmode is set to')
+            .setDescription('Amount of time slowmode is set to (default is 30 seconds)')
             .addChoices(
+                { name: 'thaw', value: 'thaw' },
                 { name: '5 seconds', value: '5' },
                 { name: '10 seconds', value: '10' },
                 { name: '15 seconds', value: '15' },
@@ -153,7 +148,6 @@ const commands = [
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setContexts(InteractionContextType.Guild),
-    */
     new ContextMenuCommandBuilder()
         .setName('Report User')
         .setType(ApplicationCommandType.User)
