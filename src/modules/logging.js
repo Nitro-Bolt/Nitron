@@ -111,7 +111,7 @@ const purgedMessages = async (messages, channelUrl) => {
   let deletedMessages = '';
   messages.reverse().forEach(message => {
     deletedMessages += `${message.author.tag} said:\n${(message.messageSnapshots.first() ? "↱ Forwarded message:\n" + message.messageSnapshots.first().content : message.content) || '[No Content]'}\n`;
-    deletedMessages += (message.attachments.size ? `[${message.attachments.size} Attachment(s) included]` : '') + '\n\n';
+    deletedMessages += (message.attachments.size ? `[${message.attachments.size} Attachment(s) included]` + '\n' : '') + '\n';
   });
 
   let log = {
@@ -240,7 +240,7 @@ const auditLogs = async (auditLog) => {
       }
       break;
     case AuditLogEvent.InviteCreate:
-      const unix = Math.floor(Date.now()/1000)+auditLog.target.maxAge;
+      const unix = Math.floor(Date.now()/1000) + auditLog.target.maxAge;
       unimportantLog = `🔗 <@${auditLog.executorId}> created a${auditLog.target.temporary ? ' temporary' : 'n'} invite \`${auditLog.target.code}\` with ${
         auditLog.target.maxUses === 0 ? 'no limit' : `${auditLog.target.maxUses} max use(s)`} and ${
         auditLog.target.maxAge === 0 ? 'no expiration' : `expires <t:${unix}:R> or on <t:${unix}:F>`
