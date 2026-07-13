@@ -32,17 +32,27 @@ const dmMail = require('./modules/dm-mail');
 const bigBrother = tryRequire('./modules/big-brother');
 
 const activityMessages = [
-    'for thoughtcrime committers',
-    'for uncubester behaviour',
-    'for evilness'
+    'watching for thoughtcrime committers',
+    'uncubester behaviour detected',
+    'evilness soon',
+    'Hi',
+    'zap',
+    'lat',
+    'hello bolt',
+    '💎'
 ];
 
 client.once(Events.ClientReady, (client) => {
     console.log(`Logged in as ${client.user.tag}`);
-    client.user.setActivity({
-        type: ActivityType.Watching,
-        name: activityMessages[Math.floor(Math.random() * activityMessages.length)]
-    });
+
+    const setActivity = () => {
+        client.user.setActivity({
+            type: ActivityType.Custom,
+            name: activityMessages[Math.floor(Math.random() * activityMessages.length)]
+        });
+    };
+    setInterval(setActivity, 1000 * 60 * 60);
+    setActivity();
 });
 
 let invites;
