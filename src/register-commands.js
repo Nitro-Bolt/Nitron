@@ -7,14 +7,7 @@ const {
     PermissionFlagsBits,
     InteractionContextType
 } = require('discord.js');
-const dotenv = require('dotenv');
-const envresult = dotenv.config({
-    path:'config.env'
-});
-if (envresult.error) {
-    console.error("Couldn't find config.env, make sure you duplicate config.env.example, add your config, then rename it to config.env");
-    process.exit(1);
-}
+
 const {
     applicationId,
     token
