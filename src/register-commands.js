@@ -77,7 +77,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName('closethread')
         .setDescription('Locks and closes a thread')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageThreads)
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setContexts(InteractionContextType.Guild),
     new SlashCommandBuilder()
         .setName('botdm')

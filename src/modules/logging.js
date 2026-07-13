@@ -1,9 +1,11 @@
 const {
   AttachmentBuilder,
   AuditLogEvent,
-  DMChannel
+  DMChannel,
+  MessageType
 } = require('discord.js');
 const { unifiedDiff } = require('difflib');
+const { stringifyMessageContent } = require('./star-board.js')
 const client = require('../client');
 const config = require('../../config');
 
@@ -13,6 +15,7 @@ const editedMessage = async (oldMessage, newMessage) => {
   if (
     newMessage.channel instanceof DMChannel ||
     newMessage.channel.id === config.modChannelId ||
+    newMessage.channel.id === config.adminChannelId ||
     newMessage.channel.id === config.logChannelId ||
     newMessage.channel.id === config.starboardChannelId ||
     oldMessage.partial ||
@@ -35,18 +38,21 @@ const editedMessage = async (oldMessage, newMessage) => {
     allowedMentions: { parse: [] }
   };
   if (oldMessage.pinned !== newMessage.pinned) {
-    log.content = `📌 [Message](${newMessage.url}) by <@${newMessage.author.id}> was ${newMessage.pinned ? '' : 'un'}pinned in ${newMessage.channel.url}`;
+    log.content = `📌 [Message](${newMessage.url}) by <@${newMessage.author.id}> was ${newMessage.pinned ? '' : 'un'}pinned in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
   } else if (oldMessage.flags.has('SuppressEmbeds') !== newMessage.flags.has('SuppressEmbeds')) {
-    log.content = `📝 Embeds ${newMessage.flags.has('SuppressEmbeds') ? 'removed from' : 'shown on'} [message](${newMessage.url}) by <@${newMessage.author.id}> in ${newMessage.channel.url}`;
+    log.content = `📝 Embeds ${newMessage.flags.has('SuppressEmbeds') ? 'removed from' : 'shown on'} [message](${newMessage.url}) by <@${newMessage.author.id}> in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
     log.embeds = oldMessage.embeds;
   } else {
-    log.content = `📝 [Message](${newMessage.url}) by <@${newMessage.author.id}> was edited in ${newMessage.channel.url}`;
+    log.content = `📝 [Message](${newMessage.url}) by <@${newMessage.author.id}> was edited in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
     if (oldMessage.attachments !== newMessage.attachments) {
       log.files = oldMessage.attachments.map(attachment => ({
         name: attachment.name,
         attachment: attachment.url
       }));
     }
+    if (newMessage.reference) {
+      log.content += `\n💬 Replying to https://discord.com/channels/${newMessage.guildId}/${newMessage.reference.channelId}/${newMessage.reference.messageId} (\`${newMessage.reference.messageId}\`)`;
+    };
     if (diff.length <= 250) {
       if (diff) {
         log.content += `\n\`\`\`diff\n${diff}\n\`\`\``;
@@ -69,8 +75,10 @@ const deletedMessage = async (message) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
   if (
+    message.partial ||
     message.channel instanceof DMChannel ||
     message.channel.id === config.modChannelId ||
+    message.channel.id === config.adminChannelId ||
     message.channel.id === config.logChannelId ||
     message.channel.id === config.starboardChannelId
   ) {
@@ -78,7 +86,7 @@ const deletedMessage = async (message) => {
   }
 
   let log = {
-    content: `🗑 [${message.messageSnapshots.first() ? 'Forwarded ' : ''}Message](${message.url}) by ${message.partial ? 'an unknown user' : `<@${message.author.id}>`} was deleted in ${message.channel.url}`,
+    content: `🗑 [${message.messageSnapshots.first() ? 'Forwarded ' : ''}Message](${message.url}) by <@${message.author.id}> was deleted in ${message.channel.url} (\`${message.id}\`)`,
     allowedMentions: { parse: [] }
   };
   const attachments = message.messageSnapshots.first() ? message.messageSnapshots.first().attachments : message.attachments;
@@ -88,22 +96,129 @@ const deletedMessage = async (message) => {
       attachment: attachment.url
     }));
   }
-  if (!message.partial) {
-    content = message.messageSnapshots.first() ? message.messageSnapshots.first().content : message.content;
-    if (content.length <= 250) {
-      log.content += `\n\`\`\`\n${content}\n\`\`\``;
-    } else {
-      log.files = log.files.concat([
-        new AttachmentBuilder(
-          Buffer.from(content),
-          { name: 'message.txt' }
-        )
-      ]);
+
+  let content = message.content.replace(/```/g, "\\`\\`\\`");
+
+  if (message.messageSnapshots.first()) {
+      content = "↱ Forwarded message:\n" + message.messageSnapshots.first().content;
+  } else if (message.poll) {
+    let poll = message.poll;
+    content = `[Poll]\n\n${poll.question.text}`
+    let answers = poll.answers.map(answer => answer);
+    for (let i = 0; i < answers.length; i++) {
+      content += `\n${poll.allowMultiselect ? "☐" : "◯"} `;
+      if (answers[i].emoji) {
+        if (answers[i].emoji && answers[i].emoji.id) {
+          content += `:${answers[i].emoji.name}: `;
+        } else if (answers[i].emoji) {
+          content += answers[i].emoji.name + " ";
+        } 
+      }
+      content += answers[i].text;
     }
+    if (poll.resultsFinalized) {
+      content += `\nPoll closed`;
+    } else {
+      content += `\nPoll open`;
+    }
+  } else if (message.embeds[0] && message.type == MessageType.PollResult) {
+    embed = message.embeds[0].data;
+    content = `[Poll Result]\n\n"${embed.fields[0].value}" results:\nTotal votes: ${embed.fields[2].value}`;
+    if (embed.fields[6]) {
+      content += `:${embed.fields[6].value}: `;
+    } else if (embed.fields[5]) {
+      content += embed.fields[5].value + " ";
+    }
+    if (embed.fields[3]) {
+      content += `\nWinner: "${embed.fields[4].value}" with ${embed.fields[1].value} votes`;
+    } else {
+      if (embed.fields[2].value > 0) {
+        content += `\nThe results were tied`;
+      } else {
+        content += `\nThere was no winner`;
+      }
+    }
+  } else if (message.system) {
+    content = "[" + stringifyMessageContent(message) + "]";
+  } else {
+    if (message.reference) {
+      log.content += `\n💬 Replying to https://discord.com/channels/${message.guildId}/${message.reference.channelId}/${message.reference.messageId} (\`${message.reference.messageId}\`)`;
+    };
+  };
+
+  if (content.length <= 250) {
+    log.content += `\n\`\`\`\n${content}\n\`\`\``;
+  } else {
+    log.files = log.files.concat([
+      new AttachmentBuilder(
+        Buffer.from(content),
+        { name: 'message.txt' }
+      )
+    ]);
   }
 
   await logChannel.send(log);
 };
+
+const onReactionRemove = async (reaction, user) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+  await reaction.fetch();
+
+  let log = {
+    content: `🔬 `,
+    allowedMentions: { parse: [] }
+  };
+
+  if (reaction.emoji.id) {
+    if (reaction.emoji.guildId === reaction.message.guild.id) {
+      log.content += `<:${reaction.emoji.name}:${reaction.emoji.id}>`;
+    } else {
+      log.content += `[${reaction.emoji.name}](https://cdn.discordapp.com/emojis/${reaction.emoji.id}.gif?size=48&animated=${reaction.emoji.animated}&name=${reaction.emoji.name})`;
+    }
+  } else {
+    log.content += reaction.emoji.name;
+  }
+
+  log.content += ` was unreacted from [Message](${reaction.message.url}) by <@${user.id}> in ${reaction.message.channel.url}`;
+
+  await logChannel.send(log);
+}
+
+const onReactionRemovedByModerator = async (reaction) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+  await reaction.fetch();
+
+  let log = {
+    content: `🦠 `,
+    allowedMentions: { parse: [] }
+  };
+
+  if (reaction.emoji.id) {
+    if (reaction.emoji.guildId === reaction.message.guild.id) {
+      log.content += `<:${reaction.emoji.name}:${reaction.emoji.id}>`;
+    } else {
+      log.content += `[${reaction.emoji.name}](https://cdn.discordapp.com/emojis/${reaction.emoji.id}.gif?size=48&animated=${reaction.emoji.animated}&name=${reaction.emoji.name})`;
+    }
+  } else {
+    log.content += reaction.emoji.name;
+  }
+
+  log.content += ` reaction was removed from [Message](${reaction.message.url}) by moderators in ${reaction.message.channel.url}`;
+
+  await logChannel.send(log);
+}
+
+const onAllReactionsRemovedByModerator = async (message) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+  await message.fetch();
+
+  let log = {
+    content: `🧼 All reactions removed from [Message](${message.url}) by moderators in ${message.channel.url}`,
+    allowedMentions: { parse: [] }
+  };
+
+  await logChannel.send(log);
+}
 
 const purgedMessages = async (messages, channelUrl) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
@@ -290,6 +405,9 @@ const auditLogs = async (auditLog) => {
 module.exports = {
   editedMessage,
   deletedMessage,
+  onReactionRemove,
+  onReactionRemovedByModerator,
+  onAllReactionsRemovedByModerator,
   purgedMessages,
   voiceChat,
   userJoin,

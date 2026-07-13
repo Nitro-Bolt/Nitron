@@ -7,11 +7,11 @@ const client = require('../client');
 const config = require('../../config');
 
 const doesTicketExist = (tickets, userId) => {
-  return tickets.threads.some(thread => thread.name.includes(userId));
+  return tickets.threads.some(thread => thread.name.endsWith(userId));
 };
 
 const findTicket = (tickets, userId) => {
-  return tickets.threads.find(thread => thread.name.includes(userId));
+  return tickets.threads.find(thread => thread.name.endsWith(userId));
 };
 
 const ticketActivity = async () => {
@@ -49,7 +49,7 @@ const contactMods = async (interaction) => {
   const username = interaction.member.nickname ?? interaction.user.displayName;
   if (!doesTicketExist(await contactChannel.threads.fetchActive(), interaction.user.id)) {
     const thread = await contactChannel.threads.create({
-      name: `${username} (${interaction.user.id})`,
+      name: `${username} - ${interaction.user.id}`,
       type: ChannelType.PrivateThread
     });
 
@@ -118,7 +118,7 @@ const reportMessage = async (interaction) => {
   const username = interaction.member.nickname ?? interaction.user.displayName;
   if (!doesTicketExist(await contactChannel.threads.fetchActive(), interaction.user.id)) {
     const thread = await contactChannel.threads.create({
-      name: `${username} (${interaction.user.id})`,
+      name: `${username} - ${interaction.user.id}`,
       type: ChannelType.PrivateThread
     });
 
@@ -179,7 +179,7 @@ const reportUser = async (interaction) => {
   const username = interaction.member.nickname ?? interaction.user.displayName;
   if (!doesTicketExist(await contactChannel.threads.fetchActive(), interaction.user.id)) {
     const thread = await contactChannel.threads.create({
-      name: `${username} (${interaction.user.id})`,
+      name: `${username} - ${interaction.user.id}`,
       type: ChannelType.PrivateThread
     });
 

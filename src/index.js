@@ -1,6 +1,5 @@
 const {
     Events,
-    ActivityType,
     AuditLogEvent
 } = require('discord.js');
 const {
@@ -147,6 +146,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
     try {
         await starBoard.onReaction(reaction);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+client.on(Events.MessageReactionRemove, async (reaction, user) => {
+    try {
+        await logging.onReactionRemove(reaction, user);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+client.on(Events.MessageReactionRemoveEmoji, async (reaction) => {
+    try {
+        await logging.onReactionRemovedByModerator(reaction);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+client.on(Events.MessageReactionRemoveAll, async (message) => {
+    try {
+        await logging.onAllReactionsRemovedByModerator(message);
     } catch (e) {
         console.error(e);
     }
