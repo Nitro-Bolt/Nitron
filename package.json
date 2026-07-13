@@ -8,6 +8,7 @@
         "better-sqlite3": "^11.10.0",
         "difflib": "^0.2.4",
         "discord.js": "^14.19.3",
+        "dotenv": "^17.4.2",
         "lodash.clonedeep": "^4.5.0"
     },
     "private": true
