@@ -41,7 +41,8 @@ const activityMessages = [
     'hello bolt',
     '💎',
     'eat lasagna',
-    'nitrobolt soon'
+    'nitrobolt soon',
+    'nitrobort'
 ];
 
 client.once(Events.ClientReady, (client) => {
