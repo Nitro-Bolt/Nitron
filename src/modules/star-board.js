@@ -221,7 +221,7 @@ const starboard = new Board({
     name: "starboard",
     table: "starboard",
     emoji: "⚡",
-    threshold: 7,
+    threshold: 5,
     colors: [0xfe5726, 0xffa126, 0xff2626],
     channelId: config.starboardChannelId
 });
@@ -230,7 +230,7 @@ const evilboard = new Board({
     name: "evilboard",
     table: "evilboard",
     emoji: "🌱",
-    threshold: 7,
+    threshold: 5,
     colors: [0x99F762, 0x88DB57, 0x77C04C],
     channelId: config.evilboardChannelId
 });
