@@ -246,6 +246,27 @@ const purgedMessages = async (messages, channelUrl) => {
   await logChannel.send(log);
 }
 
+const newHashedImage = async (attachmentCount, channelUrl) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  await logChannel.send(`${message.author.tag} hashed ${attachmentCount} new images`);
+}
+
+const deleteHashedImage = async (attachments, confidences, channelUrl) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  let deleteResponse = `Deleted message from ${message.author.tag} due to matching hashed images:`;
+  attachments = attachments.map((attachment, i) => { // map over every attachment to spoiler them incase there is sensitive content
+    deleteResponse += '\n' + `Confidence of image ${i}: ${confidences[i]}`; // additionally, list the confidence of each image (to how much it matches with any hashed image)
+    return {spoiler: true, ...attachment };
+  });
+
+  await logChannel.send({
+    content: deleteResponse,
+    attachments: attachments
+  });
+}
+
 const voiceChat = async (oldState, newState) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
@@ -284,7 +305,7 @@ const voiceChat = async (oldState, newState) => {
   await logChannel.send(log);
 }
 
-const userJoin = async (member,oldInvites) => {
+const userJoin = async (member, oldInvites) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
   member.guild.invites.fetch().then(newInvites => {
