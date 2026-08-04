@@ -3,7 +3,7 @@ const pathUtil = require('path');
 const sqlite3 = require('better-sqlite3');
 const config = process.env;
 
-const resolvedDataDirectory = pathUtil.resolve(__dirname, '..', config.dataPath);
+const resolvedDataDirectory = pathUtil.resolve(__dirname, '..', config.dataPath ?? "");
 if (!fs.existsSync(resolvedDataDirectory)) {
     throw new Error(`Data path "${resolvedDataDirectory}" does not exist. Did you forget to mount it?`);
 }
