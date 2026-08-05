@@ -31,6 +31,15 @@ const commands = [
         )
         .setContexts(InteractionContextType.Guild),
     new SlashCommandBuilder()
+        .setName('hashimages')
+        .setDescription('View or add images to the set of hashed images')
+        .addAttachmentOption(option => option
+            .setName('adding')
+            .setDescription('Are you adding an image?')
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .setContexts(InteractionContextType.Guild),
+    new SlashCommandBuilder()
         .setName('timeout')
         .setDescription('Timeout a user')
         .addUserOption(option => option

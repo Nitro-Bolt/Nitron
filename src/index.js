@@ -1,7 +1,8 @@
 const {
     Events,
     AuditLogEvent,
-    ActivityType
+    ActivityType,
+    ChannelType
 } = require('discord.js');
 
 const token = process.env.token;
@@ -29,6 +30,7 @@ const logging = require('./modules/logging');
 const slowmode = require('./modules/slowmode');
 const timeout = require('./modules/timeout');
 const dmMail = require('./modules/dm-mail');
+const hashImages = require('./modules/hash-images');
 const bigBrother = tryRequire('./modules/big-brother');
 
 const activityMessages = [
@@ -42,7 +44,8 @@ const activityMessages = [
     '💎',
     'eat lasagna',
     'nitrobolt soon',
-    'nitrobort'
+    'nitrobort',
+    '[4 attachments]'
 ];
 
 client.once(Events.ClientReady, (client) => {
@@ -78,6 +81,11 @@ client.on(Events.MessageCreate, async (message) => {
         if (bigBrother) await bigBrother.checkThoughtcrime(message);
 
         await dmMail.handleDirectMessage(message);
+
+        if (message.channel.type !== ChannelType.DM) {
+            console.log("very not DMs, very checking for BAD stuff")
+            await hashImages.checkInputAttachments(message);
+        }
     } catch (e) {
         console.error(e);
     }
@@ -116,6 +124,26 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
     try {
+        if (!interaction.isCommand() && interaction.customId) {
+            // for components and other non-slash commands
+            // MODULE-NAME_INPUT_WITH_UNDERSCORES
+            // the module should export runComponent(interaction, input) which is automatically handled here
+            const commandModule = interaction.customId.split("_", 1);
+            const moduleInput = interaction.customId.split("_").slice(1).join("_");
+            const tempRequire = tryRequire(`./modules/${commandModule}`);
+
+            console.log(commandModule, moduleInput)
+
+            if (!tempRequire) {
+                console.error(`Attempted to use runComponent on module ${commandModule} but no such module was found.`);
+            } else if (!tempRequire.runComponent) {
+                console.error(`Attempted to use runComponent on module ${commandModule} but that function wasn't exported.`);
+            } else {
+                await tempRequire.runComponent(interaction, moduleInput);
+            }
+            return;
+        }
+
         switch (interaction.commandName) {
             case 'contactmods':
                 await contactMods.contactMods(interaction);
@@ -137,6 +165,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 break;
             case 'mutedm':
                 await dmMail.handleMuteDirectMessage(interaction);
+                break;
+            case 'hashimages':
+                await hashImages.hashNewAttachment(interaction);
                 break;
             case 'Report User':
                 await contactMods.reportUser(interaction);
