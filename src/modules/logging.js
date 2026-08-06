@@ -246,6 +246,49 @@ const purgedMessages = async (messages, channelUrl) => {
   await logChannel.send(log);
 }
 
+const newHashedImage = async (attachment, hash, interactionAuthor) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  await logChannel.send({
+    content: `🖼️ ${interactionAuthor.tag} hashed a new image with hash \`${hash}\``,
+    files: [{
+        attachment: attachment,
+        name: "SPOILER_newlyHashedAttachment.png"
+      }]
+  });
+}
+
+const removeHashedImage = async (attachmentData, interactionAuthor) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+  const { hash, buffer } = attachmentData;
+
+  await logChannel.send({
+    content: `🖼️ ${interactionAuthor.tag} removed image \`${hash}\` from hashes`,
+    files: [{
+        attachment: buffer,
+        name: "SPOILER_removedHash.png",
+      }]
+  });
+}
+
+const deleteHashedImage = async (flagged, message) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  let deleteResponse = `🗑 Message from ${message.author.tag} was deleted in <#${message.channel.id}> due to matching hashed images:`;
+  const attachments = flagged.map((attachment, i) => {
+    const { flaggedAttachment, flaggedId, similarity } = attachment;
+
+    deleteResponse += '\n- ' + `Attachment ${i+1} matched hash ID ${flaggedId} by ${similarity}%`; // additionally, list the confidence of each image (to how much it matches with any hashed image)
+    return { attachment: attachment.flaggedAttachment, name: `SPOILER_removed_by_${flaggedId}.png` };
+  });
+  console.log(attachments)
+
+  await logChannel.send({
+    content: deleteResponse,
+    files: attachments
+  });
+}
+
 const voiceChat = async (oldState, newState) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
@@ -284,7 +327,7 @@ const voiceChat = async (oldState, newState) => {
   await logChannel.send(log);
 }
 
-const userJoin = async (member,oldInvites) => {
+const userJoin = async (member, oldInvites) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
   member.guild.invites.fetch().then(newInvites => {
@@ -412,5 +455,8 @@ module.exports = {
   voiceChat,
   userJoin,
   userLeave,
-  auditLogs
+  auditLogs,
+  newHashedImage,
+  deleteHashedImage,
+  removeHashedImage
 };
