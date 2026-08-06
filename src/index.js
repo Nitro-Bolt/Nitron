@@ -83,7 +83,6 @@ client.on(Events.MessageCreate, async (message) => {
         await dmMail.handleDirectMessage(message);
 
         if (message.channel.type !== ChannelType.DM) {
-            console.log("very not DMs, very checking for BAD stuff")
             await hashImages.checkInputAttachments(message);
         }
     } catch (e) {
@@ -131,8 +130,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const commandModule = interaction.customId.split("_", 1);
             const moduleInput = interaction.customId.split("_").slice(1).join("_");
             const tempRequire = tryRequire(`./modules/${commandModule}`);
-
-            console.log(commandModule, moduleInput)
 
             if (!tempRequire) {
                 console.error(`Attempted to use runComponent on module ${commandModule} but no such module was found.`);

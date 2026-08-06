@@ -108,7 +108,6 @@ async function checkInputAttachments(message) {
         const urlFetch = await fetch(attachment.url);
         const buffer = Buffer.from(await urlFetch.arrayBuffer());
         const thisHash = String(await imghash.hash(buffer, 16));
-        console.log(`checking ${attachment.url}`)
 
         for (const testHash of hashes) {
             const xor = BigInt("0x" + thisHash) ^ BigInt("0x" + testHash.hash);
@@ -116,10 +115,8 @@ async function checkInputAttachments(message) {
                                   .split("")
                                   .filter(bit => bit === "1")
                                   .length;
-            console.log(difference)
             const similarity = (1 - difference / 16**2) * 100;
 
-            console.log(`similarity = ${similarity} against hash ${thisHash}`)
             if (similarity >= 85) { // 85% or more of the image matches this hash
                 flagged.push({ "flaggedAttachment": buffer, "flaggedId": testHash.id, "similarity": similarity });
                 break;
