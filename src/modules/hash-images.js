@@ -36,11 +36,11 @@ function viewHashedImage(interaction, page) {
     const thisHash = hashes[page];
 
     const noImagesComponent = new ContainerBuilder()
-                                .addTextDisplayComponents(
-                                    new TextDisplayBuilder()
-                                        .setContent("There are no hashed images to view. Add a hashed image by specifying the `adding` input on this command")
-                                )
-                                .setAccentColor(Colors.Orange);
+        .addTextDisplayComponents(
+            new TextDisplayBuilder()
+                .setContent("There are no hashed images to view. Add a hashed image by specifying the `adding` input on this command")
+        )
+        .setAccentColor(Colors.Orange);
 
     if (!thisHash) {
         return interaction.isButton()
@@ -50,18 +50,19 @@ function viewHashedImage(interaction, page) {
 
     const attachmentData = new AttachmentBuilder(thisHash.buffer, { name: `hashedAttachment_${thisHash.id}.png` });
     const pageComponent = new ContainerBuilder()
-                            .addMediaGalleryComponents(
-                                new MediaGalleryBuilder()
-                                    .addItems(
-                                        new MediaGalleryItemBuilder()
-                                            .setURL(`attachment://hashedAttachment_${thisHash.id}.png`)
-                                            .setDescription("This is a hashed image!")
-                                    )
-                            )
-                            .addTextDisplayComponents(
-                                new TextDisplayBuilder()
-                                    .setContent(`ID: ${thisHash.id}`)
-                            );
+        .addMediaGalleryComponents(
+            new MediaGalleryBuilder()
+                .addItems(
+                    new MediaGalleryItemBuilder()
+                        .setURL(`attachment://hashedAttachment_${thisHash.id}.png`)
+                        .setDescription("This is a hashed image!")
+                )
+        )
+        .addTextDisplayComponents(
+            new TextDisplayBuilder()
+                .setContent(`ID: ${thisHash.id}`)
+        );
+
     const row = new ActionRowBuilder();
     if (page > 0) {
         row.addComponents(
