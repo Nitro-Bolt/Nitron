@@ -7,7 +7,8 @@ const {
     MediaGalleryItemBuilder,
     AttachmentBuilder,
     TextDisplayBuilder,
-    ActionRowBuilder
+    ActionRowBuilder,
+    Colors
 } = require('discord.js');
 const imghash = require('imghash');
 const db = require('../db.js');
@@ -34,8 +35,17 @@ function viewHashedImage(interaction, page) {
     const hashes = getHashes.all();
     const thisHash = hashes[page];
 
+    const noImagesComponent = new ContainerBuilder()
+                                .addTextDisplayComponents(
+                                    new TextDisplayBuilder()
+                                        .setContent("There are no hashed images to view. Add a hashed image by specifying the `adding` input on this command")
+                                )
+                                .setAccentColor(Colors.Orange);
+
     if (!thisHash) {
-        return interaction.reply("There are no hashed images to view. Add a hashed image by specifying the `adding` input on this command")
+        return interaction.isButton()
+        ? interaction.update({ components: [noImagesComponent], flags: MessageFlags.IsComponentsV2 })
+        : interaction.reply({ components: [noImagesComponent], flags: MessageFlags.IsComponentsV2 });
     }
 
     const attachmentData = new AttachmentBuilder(thisHash.buffer, { name: `hashedAttachment_${thisHash.id}.png` });
