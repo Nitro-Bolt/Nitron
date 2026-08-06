@@ -278,7 +278,7 @@ const deleteHashedImage = async (flagged, message) => {
   const attachments = flagged.map((attachment, i) => {
     const { flaggedAttachment, flaggedId, similarity } = attachment;
 
-    deleteResponse += '\n- ' + `Attachment ${i} matched hash ID ${flaggedId} by ${similarity}%`; // additionally, list the confidence of each image (to how much it matches with any hashed image)
+    deleteResponse += '\n- ' + `Attachment ${i+1} matched hash ID ${flaggedId} by ${similarity}%`; // additionally, list the confidence of each image (to how much it matches with any hashed image)
     return { attachment: attachment.flaggedAttachment, name: `SPOILER_removed_by_${flaggedId}.png` };
   });
   console.log(attachments)

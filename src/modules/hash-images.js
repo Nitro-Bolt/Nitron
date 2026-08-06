@@ -50,7 +50,7 @@ function viewHashedImage(interaction, page) {
                             )
                             .addTextDisplayComponents(
                                 new TextDisplayBuilder()
-                                    .setContent(`Hash: \`${thisHash.hash}\` ID: \`${thisHash.id}\``)
+                                    .setContent(`# ID: ${thisHash.id}`)
                             );
     const row = new ActionRowBuilder();
     if (page > 0) {
