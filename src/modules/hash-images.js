@@ -116,23 +116,27 @@ async function checkInputAttachments(message) {
     const flagged = [];
 
     for (const attachment of attachments) {
-        const urlFetch = await fetch(attachment.url);
-        const buffer = Buffer.from(await urlFetch.arrayBuffer());
-        const thisHash = String(await imghash.hash(buffer, 16));
+        try {
+            const urlFetch = await fetch(attachment.url);
+            const buffer = Buffer.from(await urlFetch.arrayBuffer());
+            const thisHash = String(await imghash.hash(buffer, 16));
 
-        for (const testHash of hashes) {
-            const xor = BigInt("0x" + thisHash) ^ BigInt("0x" + testHash.hash);
-            const difference = xor.toString(2)
-                                  .split("")
-                                  .filter(bit => bit === "1")
-                                  .length;
-            const similarity = (1 - difference / 16**2) * 100;
+            for (const testHash of hashes) {
+                const xor = BigInt("0x" + thisHash) ^ BigInt("0x" + testHash.hash);
+                const difference = xor.toString(2)
+                                    .split("")
+                                    .filter(bit => bit === "1")
+                                    .length;
+                const similarity = (1 - difference / 16**2) * 100;
 
-            if (similarity >= 85) { // 85% or more of the image matches this hash
-                flagged.push({ "flaggedAttachment": buffer, "flaggedId": testHash.id, "similarity": similarity });
-                break;
-            }
-        };
+                if (similarity >= 85) { // 85% or more of the image matches this hash
+                    flagged.push({ "flaggedAttachment": buffer, "flaggedId": testHash.id, "similarity": similarity });
+                    break;
+                }
+            };
+        } catch (err) {
+            console.error(`Couldn't check attachment: ${err}`);
+        }
     };
 
     if (flagged.length) {
