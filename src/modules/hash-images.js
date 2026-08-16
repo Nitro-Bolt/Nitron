@@ -11,6 +11,7 @@ const {
     Colors
 } = require('discord.js');
 const imghash = require('imghash');
+const sharp = require('sharp');
 const db = require('../db.js');
 const { newHashedImage, deleteHashedImage, removeHashedImage } = require('./logging.js');
 const { modChannelId } = process.env;
@@ -29,6 +30,17 @@ const removeHash = db.prepare(`
     WHERE id = ?
     RETURNING *
 `);
+
+async function normalizeBuffer(buffer) {
+    const normalized = await sharp(buffer)
+        .resize(256, 256, { fit: 'fill' })
+        .grayscale()
+        .flatten()
+        .png()
+        .toBuffer();
+    
+    return normalized;
+}
 
 function viewHashedImage(interaction, page) {
     page = Number.parseInt(page);
@@ -119,7 +131,8 @@ async function checkInputAttachments(message) {
         try {
             const urlFetch = await fetch(attachment.url);
             const buffer = Buffer.from(await urlFetch.arrayBuffer());
-            const thisHash = String(await imghash.hash(buffer, 16));
+            const hashBuffer = await normalizeBuffer(buffer);
+            const thisHash = String(await imghash.hash(hashBuffer, 16));
 
             for (const testHash of hashes) {
                 const xor = BigInt("0x" + thisHash) ^ BigInt("0x" + testHash.hash);
@@ -155,7 +168,8 @@ async function hashNewAttachment(interaction) {
 
         const urlFetch = await fetch(attachment.url);
         const buffer = Buffer.from(await urlFetch.arrayBuffer());
-        const hash = String(await imghash.hash(buffer, 16));
+        const hashBuffer = await normalizeBuffer(buffer);
+        const hash = String(await imghash.hash(hashBuffer, 16));
 
         db.prepare(`
             INSERT INTO attachmentHashes (hash, buffer)

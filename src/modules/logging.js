@@ -281,7 +281,6 @@ const deleteHashedImage = async (flagged, message) => {
     deleteResponse += '\n- ' + `Attachment ${i+1} matched hash ID ${flaggedId} by ${similarity}%`; // additionally, list the confidence of each image (to how much it matches with any hashed image)
     return { attachment: attachment.flaggedAttachment, name: `SPOILER_removed_by_${flaggedId}.png` };
   });
-  console.log(attachments)
 
   await logChannel.send({
     content: deleteResponse,
