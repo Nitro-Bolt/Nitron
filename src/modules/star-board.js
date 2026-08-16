@@ -230,7 +230,7 @@ const evilboard = new Board({
     name: "evilboard",
     table: "evilboard",
     emoji: "🥭",
-    threshold: 1,
+    threshold: 5,
     colors: [0xF55727, 0xF57D27, 0xE66045],
     channelId: config.evilboardChannelId
 });
