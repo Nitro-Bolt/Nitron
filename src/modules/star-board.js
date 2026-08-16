@@ -229,9 +229,9 @@ const starboard = new Board({
 const evilboard = new Board({
     name: "evilboard",
     table: "evilboard",
-    emoji: "🌱",
-    threshold: 5,
-    colors: [0x99F762, 0x88DB57, 0x77C04C],
+    emoji: "🥭",
+    threshold: 1,
+    colors: [0xF55727, 0xF57D27, 0xE66045],
     channelId: config.evilboardChannelId
 });
 
