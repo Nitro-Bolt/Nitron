@@ -46,7 +46,7 @@ const contactMods = async (interaction) => {
   });
   const mostRecentMessage = recentMessages.first();
 
-  const username = interaction.member.nickname ?? interaction.user.displayName;
+  const username = interaction.user.username;
   if (!doesTicketExist(await contactChannel.threads.fetchActive(), interaction.user.id)) {
     const thread = await contactChannel.threads.create({
       name: `${username} - ${interaction.user.id}`,
