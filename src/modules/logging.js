@@ -160,6 +160,25 @@ const deletedMessage = async (message) => {
   await logChannel.send(log);
 };
 
+const closedThread = async (thread) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  await logChannel.send(`🧵 Thread <#${thread.id}> in <#${thread.parentId}> by <@${thread.ownerId}> was closed`)
+}
+
+const createdThread = async (thread) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  if (thread.ownerId == client.user.id) return;
+  await logChannel.send(`🧵 Thread <#${thread.id}> was created in <#${thread.parentId}> by <@${thread.ownerId}>`)
+}
+
+const deletedThread = async (thread) => {
+  const logChannel = await client.channels.fetch(config.logChannelId);
+
+  await logChannel.send(`🧵 Thread **${thread.name}** in <#${thread.parentId}> by <@${thread.ownerId}> was deleted`)
+}
+
 const onReactionRemove = async (reaction, user) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
   await reaction.fetch();
@@ -447,6 +466,9 @@ const auditLogs = async (auditLog) => {
 module.exports = {
   editedMessage,
   deletedMessage,
+  closedThread,
+  createdThread,
+  deletedThread,
   onReactionRemove,
   onReactionRemovedByModerator,
   onAllReactionsRemovedByModerator,

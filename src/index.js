@@ -117,6 +117,18 @@ client.on(Events.MessageDelete, async (message) => {
     }
 });
 
+client.on(Events.ThreadCreate, async (thread) => {
+    await logging.createdThread(thread);
+});
+
+client.on(Events.ThreadUpdate, async (thread) => {
+    if (thread.locked) await logging.closedThread(thread);
+});
+
+client.on(Events.ThreadDelete, async (thread) => {
+    await logging.deletedThread(thread);
+});
+
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
     await logging.voiceChat(oldState, newState);
 });
