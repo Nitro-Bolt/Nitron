@@ -117,6 +117,11 @@ class Board {
         return row && BigInt(row.starboard_message_id) > 0;
     }
 
+    async getReactionCount(reaction) {
+        await reaction.users.fetch();
+        return reaction.users.cache.filter((user) => !user.bot).size;
+    }
+
     async updateMessage(message) {
         await message.fetch();
         const boardChannel = await client.channels.fetch(this.channelId);
@@ -163,34 +168,36 @@ class Board {
         }
     }
 
-    async onReaction(reaction) {
+    async onReaction(reaction, user) {
         await reaction.fetch();
+        if (user?.bot === true) return;
         if (reaction.emoji.name !== this.emoji) return;
 
         const message = reaction.message;
 
         if (this.isOnOtherBoard(message.id)) return;
 
+        const reactionCount = await this.getReactionCount(reaction);
         const existing = this.get.get(message.id);
 
         if (existing) {
             // only store the largest count
-            if (reaction.count > existing.count) {
-                this.setCount.run(reaction.count, message.id);
+            if (reactionCount > existing.count) {
+                this.setCount.run(reactionCount, message.id);
                 // if it hasn't been posted yet, don't do anything, the new count will be picked up automatically
                 // if the message is still valid
                 if (BigInt(existing.starboard_message_id) > 0) {
                     await this.updateMessage(message);
                 }
             }
-        } else if (reaction.count >= this.threshold) {
+        } else if (reactionCount >= this.threshold) {
             this.addNew.run(message.id);
 
             const channel = message.channel;
             await channel.fetch();
             if (!isPublicChannel(channel)) return;
 
-            this.setCount.run(reaction.count, message.id);
+            this.setCount.run(reactionCount, message.id);
             await this.updateMessage(message);
         }
     }
@@ -238,11 +245,34 @@ const evilboard = new Board({
 starboard.otherBoard = evilboard;
 evilboard.otherBoard = starboard;
 
+async function autoReact(message) {
+    if (message.author.bot) return;
+    if (!message.channel) return;
+    if (message.messageSnapshots.first() && !message.messageSnapshots?.first()?.attachments.first()) return;
+    if (!message.messageSnapshots.first() && !message.attachments.first()) return;
+
+    const channelIds = config.starboardAutoReactChannelIds ?? [];
+    if (!channelIds.includes(message.channel.id)) return;
+
+    if (message.partial) {
+        await message.fetch();
+    }
+
+    const hasReaction = message.reactions.cache.some((reaction) => {
+        return reaction.emoji.name === starboard.emoji || reaction.emoji.toString() === starboard.emoji;
+    });
+
+    if (!hasReaction) {
+        await message.react(starboard.emoji).catch(() => null);
+    }
+}
+
 module.exports = {
     stringifyMessageContent,
-    onReaction: async (reaction) => {
-        await starboard.onReaction(reaction);
-        await evilboard.onReaction(reaction);
+    autoReact,
+    onReaction: async (reaction, user) => {
+        await starboard.onReaction(reaction, user);
+        await evilboard.onReaction(reaction, user);
     },
     onDeleteMessage: async (message) => {
         await starboard.onDeleteMessage(message);
@@ -253,4 +283,3 @@ module.exports = {
         await evilboard.onEditMessage(message);
     }
 };
-

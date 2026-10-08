@@ -9,7 +9,8 @@
         "register-commands": "node --env-file-if-exists=config.env src/register-commands.js"
     },
     "dependencies": {
-        "better-sqlite3": "^12.11.1",
+        "@prometheus-io/client": "^0.16.1",
+        "better-sqlite3": "^13.0.3",
         "difflib": "^0.2.4",
         "discord.js": "^14.19.3",
         "imghash": "^1.1.4",

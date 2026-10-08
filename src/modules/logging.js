@@ -9,6 +9,47 @@ const { stringifyMessageContent } = require('./star-board.js')
 const client = require('../client');
 const config = process.env;
 
+const getImageMetadataChange = (oldMessage, newMessage) => {
+  if (!oldMessage.attachments || !newMessage.attachments) return null;
+  if (oldMessage.attachments.size !== 1 || newMessage.attachments.size !== 1) return null;
+
+  const oldAttachment = oldMessage.attachments.first();
+  const newAttachment = newMessage.attachments.first();
+
+  if (!oldAttachment || !newAttachment) return null;
+
+  const changes = [];
+  let altTextDiff = null;
+  let spoilerChange = null;
+
+  if (oldAttachment.description !== newAttachment.description) {
+    changes.push('alt text');
+    const oldAltText = oldAttachment.description ?? '';
+    const newAltText = newAttachment.description ?? '';
+    altTextDiff = unifiedDiff(
+      oldAltText.split('\n'),
+      newAltText.split('\n'),
+      { lineterm: '' }
+    )
+      .join('\n')
+      .replace(/^-{3} \n\+{3} \n/, '');
+  }
+
+  if (oldAttachment.spoiler !== newAttachment.spoiler) {
+    changes.push('spoiler status');
+    spoilerChange = newAttachment.spoiler ? 'added' : 'removed';
+  }
+
+  if (changes.length === 0) return null;
+
+  return {
+    attachment: newAttachment,
+    changes,
+    altTextDiff,
+    spoilerChange
+  };
+};
+
 const editedMessage = async (oldMessage, newMessage) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
@@ -37,11 +78,41 @@ const editedMessage = async (oldMessage, newMessage) => {
   let log = {
     allowedMentions: { parse: [] }
   };
+
+  const imageMetadata = getImageMetadataChange(oldMessage, newMessage);
+
   if (oldMessage.pinned !== newMessage.pinned) {
     log.content = `📌 [Message](${newMessage.url}) by <@${newMessage.author.id}> was ${newMessage.pinned ? '' : 'un'}pinned in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
   } else if (oldMessage.flags.has('SuppressEmbeds') !== newMessage.flags.has('SuppressEmbeds')) {
     log.content = `📝 Embeds ${newMessage.flags.has('SuppressEmbeds') ? 'removed from' : 'shown on'} [message](${newMessage.url}) by <@${newMessage.author.id}> in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
     log.embeds = oldMessage.embeds;
+  } else if (imageMetadata) {
+    let content = `🖼️ [Attachment](${newMessage.url}) by <@${newMessage.author.id}> was edited in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
+    if (imageMetadata.spoilerChange) {
+      content += `\n🫣 Spoiler was ${imageMetadata.spoilerChange}.`;
+    }
+    if (imageMetadata.altTextDiff) {
+      if (imageMetadata.altTextDiff.length <= 250) {
+        content += `\n🧐 Alt text changed:\n\`\`\`diff\n${imageMetadata.altTextDiff}\n\`\`\``;
+      } else {
+        log.files = [
+          new AttachmentBuilder(
+            Buffer.from(imageMetadata.altTextDiff),
+            { name: 'alt-text.diff' }
+          )
+        ];
+      }
+    }
+
+    log.content = content;
+
+    if (imageMetadata.attachment) {
+      log.files = log.files || [];
+      log.files.push({
+        name: imageMetadata.attachment.name || 'image.png',
+        attachment: imageMetadata.attachment.url
+      });
+    }
   } else {
     log.content = `📝 [Message](${newMessage.url}) by <@${newMessage.author.id}> was edited in ${newMessage.channel.url} (\`${newMessage.id}\`)`;
     if (oldMessage.attachments !== newMessage.attachments) {

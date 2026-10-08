@@ -9,6 +9,7 @@ const token = process.env.token;
 const cloneDeep = require("lodash.clonedeep");
 
 const client = require('./client');
+const metrics = require('./metrics');
 
 const tryRequire = (path) => {
     try {
@@ -68,7 +69,7 @@ client.on(Events.ClientReady, async (client) => {
     invites = await client.guilds.cache.first().invites.fetch();
 });
 
-client.on(Events.MessageCreate, async (message) => {
+metrics.on(Events.MessageCreate, async (message) => {
     try {
         if (message.partial) {
             await message.fetch();
@@ -85,12 +86,14 @@ client.on(Events.MessageCreate, async (message) => {
         if (message.channel.type !== ChannelType.DM) {
             await hashImages.checkInputAttachments(message);
         }
+
+        await starBoard.autoReact(message);
     } catch (e) {
         console.error(e);
     }
 });
 
-client.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
+metrics.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
     try {
         if (newMessage.partial) {
             await newMessage.fetch();
@@ -108,7 +111,7 @@ client.on(Events.MessageUpdate, async (oldMessage, newMessage) => {
     }
 });
 
-client.on(Events.MessageDelete, async (message) => {
+metrics.on(Events.MessageDelete, async (message) => {
     try {
         await logging.deletedMessage(message);
         await starBoard.onDeleteMessage(message);
@@ -117,23 +120,39 @@ client.on(Events.MessageDelete, async (message) => {
     }
 });
 
-client.on(Events.ThreadCreate, async (thread) => {
-    await logging.createdThread(thread);
+metrics.on(Events.ThreadCreate, async (thread) => {
+    try {
+        await logging.createdThread(thread);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on(Events.ThreadUpdate, async (thread) => {
-    if (thread.locked) await logging.closedThread(thread);
+metrics.on(Events.ThreadUpdate, async (thread) => {
+    try {
+        if (thread.locked) await logging.closedThread(thread);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on(Events.ThreadDelete, async (thread) => {
-    await logging.deletedThread(thread);
+metrics.on(Events.ThreadDelete, async (thread) => {
+    try {
+        await logging.deletedThread(thread);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
-    await logging.voiceChat(oldState, newState);
+metrics.on(Events.VoiceStateUpdate, async (oldState, newState) => {
+    try {
+        await logging.voiceChat(oldState, newState);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on(Events.InteractionCreate, async (interaction) => {
+metrics.on(Events.InteractionCreate, async (interaction) => {
     try {
         if (!interaction.isCommand() && interaction.customId) {
             // for components and other non-slash commands
@@ -196,15 +215,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 });
 
-client.on(Events.MessageReactionAdd, async (reaction, user) => {
+metrics.on(Events.MessageReactionAdd, async (reaction, user) => {
     try {
-        await starBoard.onReaction(reaction);
+        await starBoard.onReaction(reaction, user);
     } catch (e) {
         console.error(e);
     }
 });
 
-client.on(Events.MessageReactionRemove, async (reaction, user) => {
+metrics.on(Events.MessageReactionRemove, async (reaction, user) => {
     try {
         await logging.onReactionRemove(reaction, user);
     } catch (e) {
@@ -212,7 +231,7 @@ client.on(Events.MessageReactionRemove, async (reaction, user) => {
     }
 });
 
-client.on(Events.MessageReactionRemoveEmoji, async (reaction) => {
+metrics.on(Events.MessageReactionRemoveEmoji, async (reaction) => {
     try {
         await logging.onReactionRemovedByModerator(reaction);
     } catch (e) {
@@ -220,7 +239,7 @@ client.on(Events.MessageReactionRemoveEmoji, async (reaction) => {
     }
 });
 
-client.on(Events.MessageReactionRemoveAll, async (message) => {
+metrics.on(Events.MessageReactionRemoveAll, async (message) => {
     try {
         await logging.onAllReactionsRemovedByModerator(message);
     } catch (e) {
@@ -228,19 +247,32 @@ client.on(Events.MessageReactionRemoveAll, async (message) => {
     }
 });
 
-client.on(Events.GuildMemberAdd, async (member) => {
-    await logging.userJoin(member,cloneDeep(invites));
+metrics.on(Events.GuildMemberAdd, async (member) => {
+    try {
+        await logging.userJoin(member,cloneDeep(invites));
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on(Events.GuildMemberRemove, async (member) => {
-    await logging.userLeave(member);
+metrics.on(Events.GuildMemberRemove, async (member) => {
+    try {
+        await logging.userLeave(member);
+    } catch (e) {
+        console.error(e);
+    }
 });
 
-client.on(Events.GuildAuditLogEntryCreate, async (auditLog) => {
-    await logging.auditLogs(auditLog);
-    if (auditLog.action == AuditLogEvent.InviteCreate) {
-        invites = await client.guilds.cache.first().invites.fetch();
-    };
+metrics.on(Events.GuildAuditLogEntryCreate, async (auditLog) => {
+    try {
+        await logging.auditLogs(auditLog);
+        if (auditLog.action == AuditLogEvent.InviteCreate) {
+            invites = await client.guilds.cache.first().invites.fetch();
+        };
+    } catch (e) {
+        console.error(e);
+    }
 });
 
+metrics.listen();
 client.login(token);

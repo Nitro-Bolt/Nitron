@@ -34,6 +34,10 @@ Start the bot:
 node src/index
 ```
 
+## Metrics
+
+Set the `METRICS_PORT` environment variable. You can pull that into Prometheus/VictoriaMetrics. It listens on only `127.0.0.1` for security.
+
 ## License
 
 Nitron's open source parts are licensed under Apache 2.0. See [LICENSE](LICENSE) for more information.
