@@ -234,20 +234,29 @@ const deletedMessage = async (message) => {
 const closedThread = async (thread) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
-  await logChannel.send(`🧵 Thread <#${thread.id}> in <#${thread.parentId}> by <@${thread.ownerId}> was closed`)
+  await logChannel.send({
+    content: `🧵 Thread <#${thread.id}> in <#${thread.parentId}> by <@${thread.ownerId}> was closed`,
+    allowedMentions: { parse: [] }
+  });
 }
 
 const createdThread = async (thread) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
   if (thread.ownerId == client.user.id) return;
-  await logChannel.send(`🧵 Thread <#${thread.id}> was created in <#${thread.parentId}> by <@${thread.ownerId}>`)
+  await logChannel.send({
+    content: `🧵 Thread <#${thread.id}> was created in <#${thread.parentId}> by <@${thread.ownerId}>`,
+    allowedMentions: { parse: [] }
+  });
 }
 
 const deletedThread = async (thread) => {
   const logChannel = await client.channels.fetch(config.logChannelId);
 
-  await logChannel.send(`🧵 Thread **${thread.name}** in <#${thread.parentId}> by <@${thread.ownerId}> was deleted`)
+  await logChannel.send({
+    content: `🧵 Thread **${thread.name}** in <#${thread.parentId}> by <@${thread.ownerId}> was deleted`,
+    allowedMentions: { parse: [] }
+  });
 }
 
 const onReactionRemove = async (reaction, user) => {
