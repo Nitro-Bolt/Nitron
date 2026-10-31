@@ -168,6 +168,12 @@ class Board {
             embedMessage.embeds.push(embed.toJSON());
         }
 
+        // if the message is only embeds then our embed would be empty, so just show theirs
+        if (!content && embedMessage.embeds.length > 1) {
+            const ours = embedMessage.embeds.shift();
+            embedMessage.embeds[0].timestamp ??= ours.timestamp;
+        }
+
         if (BigInt(starting.starboard_message_id) < 0) {
             embedMessage.files = attachments.map(i => ({ name: i.name, attachment: i.url }));
 
