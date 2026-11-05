@@ -1,4 +1,4 @@
-const {PermissionsBitField, MessageType, DMChannel} = require('discord.js');
+const {PermissionsBitField, MessageType, DMChannel, embedLength} = require('discord.js');
 const client = require('../client');
 const db = require('../db');
 const config = process.env;
@@ -146,9 +146,28 @@ class Board {
             ]
         };
 
-        const attachments = message.messageSnapshots.size > 0
-            ? message.messageSnapshots.first().attachments
-            : message.attachments;
+        const source = message.messageSnapshots.size > 0
+            ? message.messageSnapshots.first()
+            : message;
+        const attachments = source.attachments;
+
+        // copy embeds posted by bots and webhooks (eg. GitHub) while staying under Discord's limits
+        // of 10 embeds and 6000 total characters per message. link previews are skipped since they
+        // aren't something we can send.
+        let totalEmbedLength = embedLength(embedMessage.embeds[0]);
+        for (const embed of source.embeds) {
+            if (embed.data.type !== 'rich') continue;
+            if (embedMessage.embeds.length >= 10) break;
+            totalEmbedLength += embed.length;
+            if (totalEmbedLength > 6000) break;
+            embedMessage.embeds.push(embed.toJSON());
+        }
+
+        // if the message is only embeds then our embed would be empty, so just show theirs
+        if (!content && embedMessage.embeds.length > 1) {
+            const ours = embedMessage.embeds.shift();
+            embedMessage.embeds[0].timestamp ??= ours.timestamp;
+        }
 
         if (BigInt(starting.starboard_message_id) < 0) {
             embedMessage.files = attachments.map(i => ({ name: i.name, attachment: i.url }));
